@@ -6,12 +6,12 @@ import pandas as pd
 # Page config
 st.set_page_config(
     page_title="Failure Classifier",
-    page_icon="images/icone.png",
+    page_icon="figuras/icone.png",
 )
 
 # Page title
 st.title('Maintenance - Failure Prediction')
-st.image('images/maintenance.jpg')
+st.image('figuras/maintenance.jpg')
 st.write("\n\n")
 
 st.markdown(
