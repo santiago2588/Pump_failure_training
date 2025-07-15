@@ -27,7 +27,6 @@ try:
     # Load the trained LightGBM model
     model = joblib.load('model/final_model.joblib')
 
-    # --- NEW: Load the label encoder ---
     # This will map numeric predictions back to text labels
     label_encoder = joblib.load('model/label_encoder.pkl')
 
