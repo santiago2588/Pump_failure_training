@@ -27,10 +27,14 @@ try:
     # Load the trained LightGBM model
     model = joblib.load('model/final_model.joblib')
 
+    # --- NEW: Load the label encoder ---
+    # This will map numeric predictions back to text labels
+    label_encoder = joblib.load('model/label_encoder.pkl')
+
 except FileNotFoundError:
     st.error(
         "Error: Model or preprocessing files not found. "
-        "Please make sure 'preprocessor_pipeline.pkl' and 'final_model.joblib' "
+        "Please make sure 'preprocessor_pipeline.pkl', 'final_model.joblib', and 'label_encoder.pkl' "
         "are in the 'model/' directory."
     )
     st.stop()
@@ -43,17 +47,6 @@ except AttributeError as e:
         "of scikit-learn used for training (e.g., scikit-learn==1.2.2)."
     )
     st.stop()
-
-# --- Mappings and Configurations ---
-# This dictionary maps the numeric output of the model to human-readable labels.
-# IMPORTANT: The order must match the encoding used during model training.
-FAILURE_TYPE_MAP = {
-    0: 'No Failure',
-    1: 'Heat Dissipation Failure',
-    2: 'Power Failure',
-    3: 'Overstrain Failure',
-    4: 'Tool Wear Failure'
-}
 
 
 # --- App Title and Description ---
@@ -88,7 +81,7 @@ with col1:
 with col2:
     torque_input = st.slider(label='Torque [Nm]', min_value=3, max_value=80, value=40, step=1)
     tool_wear_input = st.slider(label='Tool Wear [min]', min_value=0, max_value=260, value=100, step=5)
-    type_input = st.selectbox(label='Type', options=['Low', 'Medium', 'High'])
+    type_input = st.selectbox(label='Type', options=['L', 'M', 'H'])
 
 
 # --- Prediction Function ---
@@ -132,8 +125,8 @@ if st.button('Predict Failure Type', type="primary"):
         type_val=type_input
     )
 
-    # Get the text label for the prediction
-    predicted_label = FAILURE_TYPE_MAP.get(predicted_class_num, "Unknown Failure Type")
+    # --- NEW: Use the label encoder to get the text label ---
+    predicted_label = label_encoder.inverse_transform([predicted_class_num])[0]
 
     st.write("---")
     st.header("Prediction Result")
@@ -143,7 +136,7 @@ if st.button('Predict Failure Type', type="primary"):
 
     # Display the probabilities for each class
     st.write("Prediction Confidence:")
-    # Use the text labels from the map as columns
-    confidence_df = pd.DataFrame(prediction_confidence, columns=FAILURE_TYPE_MAP.values())
+    # --- NEW: Use the label encoder to get the column names ---
+    confidence_df = pd.DataFrame(prediction_confidence, columns=label_encoder.classes_)
     st.dataframe(confidence_df)
 
