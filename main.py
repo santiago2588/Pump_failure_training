@@ -27,6 +27,7 @@ try:
     # Load the trained LightGBM model
     model = joblib.load('model/final_model.joblib')
 
+    # --- NEW: Load the label encoder ---
     # This will map numeric predictions back to text labels
     label_encoder = joblib.load('model/label_encoder.pkl')
 
@@ -80,7 +81,8 @@ with col1:
 with col2:
     torque_input = st.slider(label='Torque [Nm]', min_value=3, max_value=80, value=40, step=1)
     tool_wear_input = st.slider(label='Tool Wear [min]', min_value=0, max_value=260, value=100, step=5)
-    type_input = st.selectbox(label='Type', options=['L', 'M', 'H'])
+    # --- FIX: The options must match the training data categories exactly ---
+    type_input = st.selectbox(label='Type', options=['Low', 'Medium', 'High'])
 
 
 # --- Prediction Function ---
@@ -138,4 +140,3 @@ if st.button('Predict Failure Type', type="primary"):
     # --- NEW: Use the label encoder to get the column names ---
     confidence_df = pd.DataFrame(prediction_confidence, columns=label_encoder.classes_)
     st.dataframe(confidence_df)
-
