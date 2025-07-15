@@ -24,8 +24,7 @@ st.markdown(
 preprocessor = joblib.load('model/preprocessor_pipeline.pkl')
 
 # Load the model
-model_file = 'model/final_model.joblib'
-model = joblib.load(model_file)
+model = joblib.load('model/final_model.joblib')
 
 # --- User Input Interface ---
 st.header("Input Sensor Data")
@@ -34,14 +33,14 @@ st.header("Input Sensor Data")
 col1, col2 = st.columns(2)
 
 with col1:
-    air = st.slider(label='Air Temperature [K]',min_value=250, max_value=350, value=300, step=1)
-    process = st.slider(label='Process Temperature [K]',min_value=300, max_value=350, value=310, step=1)
-    rpm = st.slider(label='Rotational Speed [rpm]',min_value=1000, max_value=3000, value=1500, step=50)
+    air_input = st.slider(label='Air Temperature [K]', min_value=290, max_value=310, value=300, step=1)
+    process_input = st.slider(label='Process Temperature [K]', min_value=300, max_value=320, value=310, step=1)
+    rpm_input = st.slider(label='Rotational Speed [rpm]', min_value=1100, max_value=3000, value=1500, step=50)
 
 with col2:
-    torque = st.slider(label='Torque [Nm]',min_value=1, max_value=100, value=40, step=1)
-    tool_wear = st.slider(label='Tool Wear [min]',min_value=0, max_value=300, value=100, step=5)
-    type = st.selectbox(label='Type', options=['Low', 'Medium', 'High'])
+    torque_input = st.slider(label='Torque [Nm]', min_value=3, max_value=80, value=40, step=1)
+    tool_wear_input = st.slider(label='Tool Wear [min]', min_value=0, max_value=260, value=100, step=5)
+    type_input = st.selectbox(label='Type', options=['Low', 'Medium', 'High'])
 
 # Function to predict the input
 def prediction(air_temp, proc_temp, rotational_speed, torque_val, tool_wear_val, type_val):
@@ -70,11 +69,18 @@ def prediction(air_temp, proc_temp, rotational_speed, torque_val, tool_wear_val,
     prediction_class = model.predict(df_transformed)
 
     return prediction_class[0], prediction_proba
-
+    
 # --- Prediction Button and Output ---
 if st.button('Predict Failure Type', type="primary"):
-    # Call the prediction function with the user inputs
-    predicted_class, prediction_confidence = prediction(air, process, rpm, torque, tool_wear, type_input)
+    # Call the prediction function with the user inputs using keyword arguments
+    predicted_class, prediction_confidence = prediction(
+        air_temp=air_input,
+        proc_temp=process_input,
+        rotational_speed=rpm_input,
+        torque_val=torque_input,
+        tool_wear_val=tool_wear_input,
+        type_val=type_input
+    )
 
     st.write("---")
     st.header("Prediction Result")
