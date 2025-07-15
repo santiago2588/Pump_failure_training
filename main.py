@@ -21,10 +21,10 @@ st.markdown(
 )
 
 # Load the saved encoder (to use lgbm model)
-#encoder = joblib.load('C:/Users/mjkipsz2/OneDrive - The University of Manchester/Desktop/Pump failure/model/onehot_encoder.pkl')
+encoder = joblib.load('model/onehot_encoder.pkl')
 
 # Load the model
-model_file = 'C:/Users/mjkipsz2/OneDrive - The University of Manchester/Desktop/Pump failure/model/model.joblib'
+model_file = 'model/final_model.joblib'
 model = joblib.load(model_file)
 
 # Streamlit interface to input data
@@ -40,8 +40,8 @@ with col2:
     tool_wear = st.slider(label='Tool Wear [min]',min_value=0, max_value=300, value=100, step=5)
     type = st.selectbox(label='Type', options=['Low', 'Medium', 'High'])
     # Transform the input using the encoder
-    #type_encoded = encoder.transform([[type]])  # Ensure input is 2D
-    #type_encoded_df = pd.DataFrame(type_encoded, columns=encoder.get_feature_names_out(['Type']))
+    type_encoded = encoder.transform([[type]])  # Ensure input is 2D
+    type_encoded_df = pd.DataFrame(type_encoded, columns=encoder.get_feature_names_out(['Type']))
 
 # Function to predict the input
 def prediction(air, process, rpm, torque, tool_wear, type):
