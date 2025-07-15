@@ -1,4 +1,5 @@
 ![Workshop Banner](https://res.cloudinary.com/dtradpei6/image/upload/data_bfnxm8.jpg)
+[![GitHub Pages](https://img.shields.io/badge/View%20Site-GitHub%20Pages-blue?logo=github)](https://santiago2588.github.io/Pump_failure_training/)
 
 # Predictive Maintenance: Failure Classifier - Workshop 🧪
 
@@ -47,14 +48,30 @@ This hands-on workshop guides participants through building and evaluating vario
    git clone <repository-url>
    cd <repository-folder>
    ```
-2. **Install dependencies:**
+2. **Create a virtual environment (recommended):**
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
+   ```
+3. **Install dependencies:**
    ```bash
    pip install -r requirements.txt
    ```
-3. **Run the app:**
+4. **Run the app:**
    ```bash
    streamlit run main.py
    ```
+   Your web browser should open with the application running.
+
+### Deploying to Streamlit Cloud:
+For a live, shareable version of your application, you can deploy it to Streamlit Cloud for free.
+1. **Push your code to a GitHub repository.**
+2. **Sign up for Streamlit Cloud:** Go to [share.streamlit.io](https://share.streamlit.io/) and sign up with your GitHub account.
+3. **Deploy the app:**
+   - Click on "New app".
+   - Select your repository and the branch where your code is.
+   - Ensure the "Main file path" is set to `main.py`.
+   - Click "Deploy!".
 
 ## Workshop Sessions 📚
 Each session corresponds to a Jupyter notebook in the `soluciones/` directory.
