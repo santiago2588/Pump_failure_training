@@ -2,34 +2,82 @@ import joblib
 import streamlit as st
 import pandas as pd
 
+# --- Page Configuration ---
+# Use an absolute path or make sure the icon is in the correct relative path
+try:
+    st.set_page_config(
+        page_title="Failure Classifier",
+        page_icon="figuras/icone.png",
+        layout="centered"
+    )
+except FileNotFoundError:
+     st.set_page_config(
+        page_title="Failure Classifier",
+        layout="centered"
+    )
 
-# Page config
-st.set_page_config(
-    page_title="Failure Classifier",
-    page_icon="figuras/icone.png",
-)
 
-# Page title
+# --- Load Models and Preprocessing Objects ---
+# NOTE: You must have these files saved from your training notebook.
+# Ensure the scikit-learn version used here matches the training environment.
+try:
+    # Load the preprocessing pipeline (handles both scaling and encoding)
+    preprocessor = joblib.load('model/preprocessor_pipeline.pkl')
+
+    # Load the trained LightGBM model
+    model = joblib.load('model/final_model.joblib')
+
+except FileNotFoundError:
+    st.error(
+        "Error: Model or preprocessing files not found. "
+        "Please make sure 'preprocessor_pipeline.pkl' and 'final_model.joblib' "
+        "are in the 'model/' directory."
+    )
+    st.stop()
+except AttributeError as e:
+    st.error(
+        f"AttributeError: {e}\n\n"
+        "This usually means there is a version mismatch for scikit-learn "
+        "between your training environment and this Streamlit environment. "
+        "Please create a requirements.txt file and specify the exact version "
+        "of scikit-learn used for training (e.g., scikit-learn==1.2.2)."
+    )
+    st.stop()
+
+# --- Mappings and Configurations ---
+# This dictionary maps the numeric output of the model to human-readable labels.
+# IMPORTANT: The order must match the encoding used during model training.
+FAILURE_TYPE_MAP = {
+    0: 'No Failure',
+    1: 'Heat Dissipation Failure',
+    2: 'Power Failure',
+    3: 'Overstrain Failure',
+    4: 'Tool Wear Failure'
+}
+
+
+# --- App Title and Description ---
 st.title('Maintenance - Failure Prediction')
-st.image('figuras/maintenance.jpg')
-st.write("\n\n")
 
+try:
+    st.image('figuras/maintenance.jpg')
+except FileNotFoundError:
+    st.warning("Could not find 'figuras/maintenance.jpg'.")
+
+
+st.write("\n")
 st.markdown(
     """
-    This app aims to assist in classifying failures, thereby reducing the time required to analyze machine problems. It enables the analysis of sensor data to classify failures swiftly and expedite the troubleshooting process.    
+    This app aims to assist in classifying failures, thereby reducing the time required to analyze machine problems.
+    It enables the analysis of sensor data to classify failures swiftly and expedite the troubleshooting process.
     """
 )
+st.write("---")
 
-# Load the saved encoder (to use lgbm model)
-preprocessor = joblib.load('model/preprocessor_pipeline.pkl')
-
-# Load the model
-model = joblib.load('model/final_model.joblib')
 
 # --- User Input Interface ---
 st.header("Input Sensor Data")
 
-# Streamlit interface to input data
 col1, col2 = st.columns(2)
 
 with col1:
@@ -42,7 +90,8 @@ with col2:
     tool_wear_input = st.slider(label='Tool Wear [min]', min_value=0, max_value=260, value=100, step=5)
     type_input = st.selectbox(label='Type', options=['Low', 'Medium', 'High'])
 
-# Function to predict the input
+
+# --- Prediction Function ---
 def prediction(air_temp, proc_temp, rotational_speed, torque_val, tool_wear_val, type_val):
     """
     This function takes raw user inputs, preprocesses them using the pipeline,
@@ -69,11 +118,12 @@ def prediction(air_temp, proc_temp, rotational_speed, torque_val, tool_wear_val,
     prediction_class = model.predict(df_transformed)
 
     return prediction_class[0], prediction_proba
-    
+
+
 # --- Prediction Button and Output ---
 if st.button('Predict Failure Type', type="primary"):
     # Call the prediction function with the user inputs using keyword arguments
-    predicted_class, prediction_confidence = prediction(
+    predicted_class_num, prediction_confidence = prediction(
         air_temp=air_input,
         proc_temp=process_input,
         rotational_speed=rpm_input,
@@ -82,13 +132,18 @@ if st.button('Predict Failure Type', type="primary"):
         type_val=type_input
     )
 
+    # Get the text label for the prediction
+    predicted_label = FAILURE_TYPE_MAP.get(predicted_class_num, "Unknown Failure Type")
+
     st.write("---")
     st.header("Prediction Result")
 
     # Display the result with confidence
-    st.success(f"The predicted failure type is: **{predicted_class}**")
+    st.success(f"The predicted failure type is: **{predicted_label}**")
 
     # Display the probabilities for each class
     st.write("Prediction Confidence:")
-    confidence_df = pd.DataFrame(prediction_confidence, columns=model.classes_)
+    # Use the text labels from the map as columns
+    confidence_df = pd.DataFrame(prediction_confidence, columns=FAILURE_TYPE_MAP.values())
     st.dataframe(confidence_df)
+
