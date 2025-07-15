@@ -42,10 +42,6 @@ with col2:
     torque = st.slider(label='Torque [Nm]',min_value=1, max_value=100, value=40, step=1)
     tool_wear = st.slider(label='Tool Wear [min]',min_value=0, max_value=300, value=100, step=5)
     type = st.selectbox(label='Type', options=['Low', 'Medium', 'High'])
-    
-    # Transform the input using the encoder
-    type_encoded = encoder.transform([[type]])  # Ensure input is 2D
-    type_encoded_df = pd.DataFrame(type_encoded, columns=encoder.get_feature_names_out(['Type']))
 
 # Function to predict the input
 def prediction(air_temp, proc_temp, rotational_speed, torque_val, tool_wear_val, type_val):
